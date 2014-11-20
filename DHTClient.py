@@ -3,13 +3,13 @@
 #!/usr/bin/env python
 
 import logging
-from time import sleep
-from Config import *
 from utility import *
 from DHTNode import *
 
+
 stdger = logging.getLogger("std_log")
 fileger = logging.getLogger("file_log")
+peerger = logging.getLogger("peer_log")
 
 #using example
 class Master(object):
@@ -18,25 +18,22 @@ class Master(object):
         stdger.debug("%s from %s:%s" % (infohash.encode("hex"), address[0], address[1]))
         fileger.debug('%s from %s:%s' % (infohash.encode('hex').upper(),address[0],address[1]))
 
+    def logPeer(self,mag,ip,port):
+
+        peerger.debug("%s is located in %s:%d",mag,ip,port)
 
 if __name__ == "__main__":
     #max_node_qsize bigger, bandwith bigger, spped higher
+
     initialLog()
-    threads = []
-    for i in xrange(THREAD_NUMBER):
-        port = i+9500
-        stdger.debug("start thread %d" % port)
-        dht=DHT(Master(), "0.0.0.0", port, max_node_qsize=1000)
-        dht.start()
-        threads.append(dht)
-        sleep(1)
+    stdger.debug("start get peer %d" % 9501)
+    dht=DHT(Master(), "0.0.0.0", 9512, max_node_qsize=1000)
+    dht.start()
+    dht.join_DHT()
 
 
-    sleep(60*60*6)
 
-    k = 0
-    for i in threads:
-        stdger.debug("stop thread %d" % k)
-        i.stop()
-        i.join()
-        k=k+1
+    while True:
+        stdger.debug("new loop")
+        dht.initialBeforGet("9f9bfd28e052442b6836b5ff0c3aae826ea0eecf")
+        dht.client()
